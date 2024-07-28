@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>웹사이트</title>
+    <style>
+        /* 기본 스타일 설정 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        /* 페이지 중앙에 컨텐츠를 배치하고 박스 모양으로 만듦 */
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        /* 제목 스타일 */
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        /* 버튼 스타일 */
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        /* 버튼 호버 효과 */
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* 질문 텍스트 스타일 */
+        #question {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        /* 이미지 스타일 */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>나와 어울리는 쿠키는?
+            쿠BTI
+        </h1>
+        <button id="startButton">시작</button>
+        <div id="choices" style="display:none;">
+            <p id="question"></p> <!-- 질문이 들어갈 부분 -->
+            <button id="choice1"></button>
+            <button id="choice2"></button>
+        </div>
+        <div id="result" style="display:none;">
+            <p>나와 어울리는 쿠키는?:</p>
+            <img id="resultImage" src="" alt="Result Image"> <!-- 결과 이미지 -->
+        </div>
+    </div>
+
+    <script>
+        let choiceCounter = 0; // 선택 횟수를 저장
+        let selections = []; // 사용자가 선택한 선택지를 저장
+        const startButton = document.getElementById('startButton');
+        const choicesDiv = document.getElementById('choices');
+        const questionP = document.getElementById('question'); // 질문 요소
+        const choice1Button = document.getElementById('choice1');
+        const choice2Button = document.getElementById('choice2');
+        const resultDiv = document.getElementById('result');
+        const resultImage = document.getElementById('resultImage');
+
+        // 선택지와 질문을 포함한 배열
+        const choices = [
+            { question: "교수님께서 두 과제 중 하나를 고르라고 했다.. 뭘하지?", options: ["춤 15초!", "레포트 20페이지.."] },
+            { question: "친구 생일선물은 뭐가 좋을까?", options: ["카카오톡 선물하기!", "친구한테 물어보고,,"] },
+            { question: "오랜만의 가족과 외식! 뭘 먹을까?", options: ["집에서 집밥이지!", "오늘은 내가 쏜다! 외식!"] },
+            { question: "예전에 알던 친구가 갑자기 연락이 왔다. 왜일까?", options: ["나.. 돈 좀 빌려줘", "나 결혼해! 결혹식 올거지?"] },
+            { question: "길가다 우스꽝스럽게 넘어졌다. 어떻게 대처할지?", options: ["아무렇지 않은척 다시 걸어간다.", "아픈티 팍팍!"] }
+        ];
+
+        // 32가지 경우의 수에 대한 결과 이미지 배열
+        const resultImages = [
+            "https://i.namu.wiki/i/wTg8QoEB7vXEo2Nww2E-jRU1h0G-sJKB9IWxcD3oaDItwzUm6mY4OF1SSgoZtaDb8Y3vmNgRU0k8qacWcI8IsbI-Hbw4DLa9z7NIYnNRlmW5u8wrr9szvo5m7gzK7FJXai7ctyCeSrfHCd2RjU2AtQ.webp",
+            "https://i.namu.wiki/i/5Crh8WIsZxvpSRBza7efG147CmpBocMkR4d4i_G8x-zWspGPDHcDtwE7OfyiY4Exi3zOlmtcj__4-cQ-gUFd6BM3qUFnAvwInToiLJ6J-oyoUm_-PPG9vYcnUOloQYQ6Ypn6lFQoBHkhWunqqMVDJg.webp",
+            "https://i.namu.wiki/i/tTejxGaWbmYFldXsPZSbapfuvfGgW-eQk495BB1IiSLpwAjPzadZdh6p-QZni3jvmvEPGa_0HLD3ai4nvA_ZtVhzXgsR69LtNllGIs4wcvNK2xTBlJ4nv6njHe6PuYJ9QhoM1Q_yh0_6jBVIr0n4og.webp",
+            "https://i.namu.wiki/i/korsZGwt_DIdKAMzV34gL1UNZ7YKl3NhIVRQb2Kz3uOCGmL6Qfnhy9S3dRU8_iMNci7JtyJMBjcENFRekxGr4TGSIWLYxEDnsVJF1qbxD1ABTS4uLRSuKkYi1qLLl-2CnYrJQZQvIGCJBlaQHUPkPQ.webp",
+            "https://i.namu.wiki/i/U_eXNfKDoeapNZCnkGR_WXHUqpZQIpech_vzO_zV_rLDJHwCXojHusGEdT8-dlSveCRA6ABYzX-iAB5-cyN6_X0yiDR7Myj6hxqjEwh0FrjZSxreImhnX2A1CVZrx0V_KhekeDGCwlDFgaZiF4VC5Q.webp",
+            "https://i.namu.wiki/i/wRYhDeGKAI-VYMlJFNPcM1IPxEgO0N4U1dNL_8ky7z93GTz31Of0GPLqgLa537U_SbJCYij4GIyDaK6WoWceS9cYV0ZvGRhysDOopyktKmvNVF3fXXv5HnxfAiw8l_ffkVcmZ_qb14X23-8Ky187rQ.webp",
+            "https://i.namu.wiki/i/pQp5HlT3WKO3_tyeaM8RK0LjAZJLr83fW-dNZ1W4P7SB-czLCmL2GBbbKIAOxBOCHTZMtbf0NuTkKcQkl3fXj-brROaco2OsCig99Bc_6fZVDKvMkMjrCMaz82xHZmuyMbEouGRTnxhR3nPfdEJ-ow.webp",
+            "https://i.namu.wiki/i/Enfv3hJ3nSMET35PrDTSJdIZlILZO2b4151NmxGRJewddaUjlJ7I-bo0CXmOqRTR7gR5TI2deWSTAm9xZ__Cq2-175S6cEhBeI2-hzVSfrA8YcHgClzn4Ogw-G-akPRJBa5RkBgbrH1gyL9g_F3p1w.webp",
+            "https://i.namu.wiki/i/wH7xANUyEaD2qMU6hxXEGCdKazlpAIbbZ8Wuje50X_fKRptcUzxoJRgXV_BGZUXVtM_YLALKmpFfZoWxnqCT1tR4SbdpkLRfBuWBGs772WUWFAHxBXH2hKbgDwXlxWHVAxy6p6gjvnJ3Hk00T5L6uA.webp",
+            "https://i.namu.wiki/i/TObveQF2bD3hE5G4cOlKADW5dKSEB6EHEovnmlTjnakY7gsl_oc0aDO7B9e9rUzpaUcC4oYQX9sWpA9iy-WmQEXwR44iFjY3AxzCBAvoHqnpHA_eAAQXzhLJwm_XDaY2QletkThan5fnHAucj0ogLw.webp",
+            "https://i.namu.wiki/i/61BXsWgZib_NIPBIXzhLxUYpiTu886qWPlBgyiFgWCsQHKxgfMxejog_cPjNPfQe3Z8M1_9IfrfVyPV7h93dfklZ-g3CaAlf6NgPJwCmD5n-Xt0jwnm6iCvlR0iXab4qhaC3UzeIyEX0J9_nK4TGKg.webp",
+            "https://i.namu.wiki/i/ufc1qmsbMyRVAqSCXr526Ymw30K4wh347vG9nw6f2rdq8miljlQ6KCydZbIsQxete8nrPEb1xAdD3Qr7eXpxkqN7r44QdTH5QWJJtI3e8pR-IX6S5CRQOhE56i5-mWatje00eGai00NJbA_5TfymGw.webp",
+            "https://i.namu.wiki/i/DvXscjDpseRJsjdKRFMjk5cd1HhjSqw2_9Bp8a4gmuYQMZ5IVOqo4Y2mvQZcnIcZznVPOEKV96bPoCPnJvPfQXlDS3uC3MWaJITZaeeio3_9qaKMCqsz9qekK-7vjBcptePLBbDdFHoTuCHROQ4Cxw.webp",
+            "https://i.namu.wiki/i/YU5oSLrbsPmANuixErSWK--6Iaedrr6Yrbhxr76v9xjRoB7Kki9KkanoCLAWc_KB6xViIn9MqodJkeiK-lHIOaDdqmy1Q5GLEVEOYDKjLe_Ra3-SxILKhbWiqwtDovCzcN9gBtjDAZMuZQYE1tWavg.webp",
+            "https://i.namu.wiki/i/pOBKBBto2qqckNDaOGydn19mWVjj_m68wG-Owqcfftgkofu7auMhSkhfPneWgkaGI2zQiJSQvlcxx_O6Ioio2_ijviD2uF70rZXtGLuDT2Lf6Nv6seSSBJw-mVvAhtMoUl8KmcI1IuQ3XUcmuNJOew.webp",
+            "https://i.namu.wiki/i/xCX_nA68BRGucloCWFSJDY9N9cChFafowmhQy9YREnVAlJcI_RP0vfubsnJ7ieP9EDcwT0yFHBVGE8aa0gyMFEksDqBR_Y4FHlEGCrhrM7hEHjXE2Wf7tUeguqbMZ0ZEKeD1kJb5zLoBqeGpQdmTvg.webp",
+            "https://i.namu.wiki/i/dFujMGdoeun1IL1l_14ogX3t0mxTiwMQV0YCUVbjvra1nhMiQvFTDaxGgj-Qfni6z1bVpBZjndWtJ-5OluAZdRJ5TIMZFNlSaSHtnAMqTaNj6rs6G1T11ybKxbOPsD_S9BUw8lCanngxrycpC0GHYA.webp",
+            "https://i.namu.wiki/i/8wV4lTSZUW2IJyI6pednGf5XFTDWlKkMbGXLQcnQAUmqUNNfAlPBG44SJkl4y1wW4k1WLExN02lt4ifviTeUAukvAihkL6SA-9-zyf3hiYyNj4H8-sK3BpMCSPfbg8fLMJv2u0b8jC5hVTasr0VX0Q.webp",
+            "https://i.namu.wiki/i/g0mrMOzZp07qJTaxDYGgbXSYLsvDvWbgS29NrFp7UHYE1uiI0vdhceEw6ZFKlxhynZa1Ac66xyTpxaUOHVcbX0XFyfA9xx-XWLVpKP8EpniksQ_1LljPTFajAktlI1xiUOadd-A9EVdWqtdDqiquqw.webp",
+            "https://i.namu.wiki/i/D4GCcRtnzJhrsWDBINws7upmrWowCokz6eLTVCSykWCCcgge7hatBWkkrbOPOi0azl6ezwC8sq76KY1rIDMGVKcXH07v8ond-gOJkhYNB8VQgPWHZ7bk_i7ntUg-LRUbVAKsa2uyDW4Nwuu4g3On0A.webp",
+            "https://i.namu.wiki/i/wTg8QoEB7vXEo2Nww2E-jRU1h0G-sJKB9IWxcD3oaDItwzUm6mY4OF1SSgoZtaDb8Y3vmNgRU0k8qacWcI8IsbI-Hbw4DLa9z7NIYnNRlmW5u8wrr9szvo5m7gzK7FJXai7ctyCeSrfHCd2RjU2AtQ.webp",
+            "https://i.namu.wiki/i/5Crh8WIsZxvpSRBza7efG147CmpBocMkR4d4i_G8x-zWspGPDHcDtwE7OfyiY4Exi3zOlmtcj__4-cQ-gUFd6BM3qUFnAvwInToiLJ6J-oyoUm_-PPG9vYcnUOloQYQ6Ypn6lFQoBHkhWunqqMVDJg.webp",
+            "https://i.namu.wiki/i/tTejxGaWbmYFldXsPZSbapfuvfGgW-eQk495BB1IiSLpwAjPzadZdh6p-QZni3jvmvEPGa_0HLD3ai4nvA_ZtVhzXgsR69LtNllGIs4wcvNK2xTBlJ4nv6njHe6PuYJ9QhoM1Q_yh0_6jBVIr0n4og.webp",
+            "https://i.namu.wiki/i/korsZGwt_DIdKAMzV34gL1UNZ7YKl3NhIVRQb2Kz3uOCGmL6Qfnhy9S3dRU8_iMNci7JtyJMBjcENFRekxGr4TGSIWLYxEDnsVJF1qbxD1ABTS4uLRSuKkYi1qLLl-2CnYrJQZQvIGCJBlaQHUPkPQ.webp",
+            "https://i.namu.wiki/i/U_eXNfKDoeapNZCnkGR_WXHUqpZQIpech_vzO_zV_rLDJHwCXojHusGEdT8-dlSveCRA6ABYzX-iAB5-cyN6_X0yiDR7Myj6hxqjEwh0FrjZSxreImhnX2A1CVZrx0V_KhekeDGCwlDFgaZiF4VC5Q.webp",
+            "https://i.namu.wiki/i/wRYhDeGKAI-VYMlJFNPcM1IPxEgO0N4U1dNL_8ky7z93GTz31Of0GPLqgLa537U_SbJCYij4GIyDaK6WoWceS9cYV0ZvGRhysDOopyktKmvNVF3fXXv5HnxfAiw8l_ffkVcmZ_qb14X23-8Ky187rQ.webp",
+            "https://i.namu.wiki/i/DvXscjDpseRJsjdKRFMjk5cd1HhjSqw2_9Bp8a4gmuYQMZ5IVOqo4Y2mvQZcnIcZznVPOEKV96bPoCPnJvPfQXlDS3uC3MWaJITZaeeio3_9qaKMCqsz9qekK-7vjBcptePLBbDdFHoTuCHROQ4Cxw.webp",
+            "https://i.namu.wiki/i/YU5oSLrbsPmANuixErSWK--6Iaedrr6Yrbhxr76v9xjRoB7Kki9KkanoCLAWc_KB6xViIn9MqodJkeiK-lHIOaDdqmy1Q5GLEVEOYDKjLe_Ra3-SxILKhbWiqwtDovCzcN9gBtjDAZMuZQYE1tWavg.webp",
+            "https://i.namu.wiki/i/pOBKBBto2qqckNDaOGydn19mWVjj_m68wG-Owqcfftgkofu7auMhSkhfPneWgkaGI2zQiJSQvlcxx_O6Ioio2_ijviD2uF70rZXtGLuDT2Lf6Nv6seSSBJw-mVvAhtMoUl8KmcI1IuQ3XUcmuNJOew.webp",
+            "https://i.namu.wiki/i/xCX_nA68BRGucloCWFSJDY9N9cChFafowmhQy9YREnVAlJcI_RP0vfubsnJ7ieP9EDcwT0yFHBVGE8aa0gyMFEksDqBR_Y4FHlEGCrhrM7hEHjXE2Wf7tUeguqbMZ0ZEKeD1kJb5zLoBqeGpQdmTvg.webp",
+            "https://i.namu.wiki/i/dFujMGdoeun1IL1l_14ogX3t0mxTiwMQV0YCUVbjvra1nhMiQvFTDaxGgj-Qfni6z1bVpBZjndWtJ-5OluAZdRJ5TIMZFNlSaSHtnAMqTaNj6rs6G1T11ybKxbOPsD_S9BUw8lCanngxrycpC0GHYA.webp",
+            "https://i.namu.wiki/i/8wV4lTSZUW2IJyI6pednGf5XFTDWlKkMbGXLQcnQAUmqUNNfAlPBG44SJkl4y1wW4k1WLExN02lt4ifviTeUAukvAihkL6SA-9-zyf3hiYyNj4H8-sK3BpMCSPfbg8fLMJv2u0b8jC5hVTasr0VX0Q.webp",
+        ];
+
+        // 시작 버튼 클릭 이벤트 리스너
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            showChoices(); // 첫 번째 선택지 표시
+        });
+
+        // 선택 버튼 클릭 이벤트 리스너
+        choice1Button.addEventListener('click', () => handleChoice(0));
+        choice2Button.addEventListener('click', () => handleChoice(1));
+
+        // 선택지를 표시하는 함수
+        function showChoices() {
+            if (choiceCounter < choices.length) {
+                choicesDiv.style.display = 'block';
+                resultDiv.style.display = 'none';
+                questionP.textContent = choices[choiceCounter].question;
+                choice1Button.textContent = choices[choiceCounter].options[0];
+                choice2Button.textContent = choices[choiceCounter].options[1];
+            } else {
+                choicesDiv.style.display = 'none';
+                resultDiv.style.display = 'block'; // 선택 완료 메시지 및 결과 이미지 표시
+                const resultIndex = parseInt(selections.join(''), 2); // 2진수를 10진수로 변환
+                resultImage.src = resultImages[resultIndex]; // 해당 인덱스의 이미지 표시
+            }
+        }
+
+        // 선택을 처리하는 함수
+        function handleChoice(choiceIndex) {
+            selections.push(choiceIndex); // 선택한 인덱스를 배열에 추가
+            choiceCounter++;
+            showChoices();
+        }
+    </script>
+</body>
+</html>
